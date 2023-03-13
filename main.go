@@ -104,7 +104,7 @@ func addTaskMsg(bot_instance *tgbotapi.BotAPI, msg_details *tgbotapi.Message) (e
 var all_task = make([]string, 0)
 
 func addNewTask(text string) {
-	all_task = append(all_task, text)
+	all_task = append(all_task, fmt.Sprintf("⭕ %v", text))
 }
 
 func handleMessage(bot_instance *tgbotapi.BotAPI, msg_details *tgbotapi.Message) (err error) {
@@ -123,12 +123,16 @@ func handleMessage(bot_instance *tgbotapi.BotAPI, msg_details *tgbotapi.Message)
 		if _, err := bot_instance.Send(new_msg); err != nil {
 			return err
 		}
+		err = listActiveTasks(bot_instance, msg_details)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
 func listActiveTasks(bot_instance *tgbotapi.BotAPI, msg_details *tgbotapi.Message) (err error) {
-	no_active_msg := fmt.Sprintf("No active task\n\n/add_task")
+	no_active_msg := fmt.Sprintf("No active task\n\n%v", getCommandsStrList())
 	if len(all_task) == 0 {
 		new_msg := tgbotapi.NewMessage(msg_details.Chat.ID, no_active_msg)
 		if _, err := bot_instance.Send(new_msg); err != nil {
@@ -136,8 +140,8 @@ func listActiveTasks(bot_instance *tgbotapi.BotAPI, msg_details *tgbotapi.Messag
 		}
 		return nil
 	}
-	list := strings.Join(all_task[:], "\n fir")
-	msg := fmt.Sprintf("Active tasks:\n\n%v", list)
+	list := strings.Join(all_task[:], "\n\n")
+	msg := fmt.Sprintf("Active tasks:\n\n%v\n\n%v", list, getCommandsStrList())
 	new_msg := tgbotapi.NewMessage(msg_details.Chat.ID, msg)
 	if _, err := bot_instance.Send(new_msg); err != nil {
 		return err
